@@ -4,21 +4,14 @@ import random
 def data_generation(grid_size):
     random.seed(10)
     grid_list = []
-    for num in range(grid_size): 
-        grid_list.append(list(range(grid_size)))
-    #suprastinti iki 1 ciklo
-    for i, single_list in enumerate(grid_list):
-        for j, num in enumerate(single_list):
-            num = int(random.random()*6/5) #defining odds of 1 appearing 
-            grid_list[i][j]=num
+    for i in range(grid_size):
+        single_list = []
+        for j in range(grid_size):
+            single_list.append(int(random.random()*6/5)) #defining odds of 1 appearing 
+        grid_list.append(single_list)
     return grid_list
 
 def population_count(grid_snip):
-    # flat_list = []
-    # for x in grid_snip:
-    #     for y in x:
-    #         flat_list.append(y)  
-    # return sum(y > 0 for y in flat_list)
     sum_ = 0
     for x in grid_snip:
         sum_ += sum(x)
@@ -27,12 +20,25 @@ def population_count(grid_snip):
 def get_next_gen_state(grid_snip, curr_x, curr_y):
     flat_list = []
     neighbour_count = 0
-    pprint(f"Current state {grid_snip[curr_x][curr_y]} of selected cell")
 
-    for i, x in enumerate(grid_snip[curr_x-1:curr_x+2]):
-        for j, y in enumerate(x[curr_y-1:curr_y+2]):
-            if not(i==curr_x and j==curr_y):
+    lower_x = curr_x - 1 if curr_x >= 1 else curr_x
+    lower_y = curr_y - 1 if curr_y >= 1 else curr_y
+    upper_x = curr_x + 2 if curr_x <= len(grid_snip) else curr_x
+    upper_y = curr_y + 2 if curr_y <= len(grid_snip) else curr_y
+
+    self_x = 1 if curr_x > 0 else 0
+    self_y = 1 if curr_y > 0 else 0
+
+    #pprint(f"Current state {grid_snip[curr_x][curr_y]} of selected cell")
+    #pprint(f"l_x {lower_x}, l_y {lower_y}, u_x {upper_x}, u_y {upper_y}")
+    for i, x in enumerate(grid_snip[lower_x:upper_x]):
+        #pprint(f"fist slice {x} index i {i}")
+        for j, y in enumerate(x[lower_y:upper_y]):
+            #pprint(f"second slice {y} index y {j}")
+            if not(i==self_x and j== self_y):
                 flat_list.append(y)
+            else:
+                pprint(f"self state {y}")
 
     pprint(flat_list)
     neighbour_count = sum(y > 0 for y in flat_list)
@@ -62,6 +68,6 @@ pprint(f"Grid and population of {local_population}")
 for x in local_grid:
     pprint(f"{x}")
 
-pprint(f"Upcoming generation cell state {get_next_gen_state(local_grid, 9, 9)}")
+pprint(f"Upcoming generation cell state {get_next_gen_state(local_grid, 1, 5)}")
 
  
