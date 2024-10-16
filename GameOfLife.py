@@ -37,12 +37,12 @@ def get_next_gen_state(grid_snip, curr_x, curr_y):
             #pprint(f"second slice {y} index y {j}")
             if not(i==self_x and j== self_y):
                 flat_list.append(y)
-            else:
-                pprint(f"self state {y}")
+            #else:
+                #pprint(f"self state {y}")
 
-    pprint(flat_list)
+    #pprint(flat_list)
     neighbour_count = sum(y > 0 for y in flat_list)
-    pprint(f"Alive neighbours count {neighbour_count}")
+    #pprint(f"Alive neighbours count {neighbour_count}")
 
     if grid_snip[curr_x][curr_y] == 1:
         if neighbour_count < 2:
@@ -58,8 +58,21 @@ def get_next_gen_state(grid_snip, curr_x, curr_y):
           return 1  
         else:
             return grid_snip[curr_x][curr_y]
+        
+def fill_new_gen_grid(grid_snip):
+    new_grid=[]
+
+    for i,_ in enumerate(grid_snip):
+        single_list = []
+        for j,_ in enumerate(grid_snip):
+            single_list.append(get_next_gen_state(grid_snip, i, j))  
+        new_grid.append(single_list)
+        #pprint(single_list)
+    #pprint(new_grid)
+    return new_grid
 
 local_grid=[]
+next_grid=[]
 local_grid=data_generation(10)
 local_population=0
 local_population=population_count(local_grid)
@@ -68,6 +81,12 @@ pprint(f"Grid and population of {local_population}")
 for x in local_grid:
     pprint(f"{x}")
 
+
 pprint(f"Upcoming generation cell state {get_next_gen_state(local_grid, 1, 5)}")
 
+next_grid=fill_new_gen_grid(local_grid)
+for x in next_grid:
+    pprint(f"{x}")
+local_population=population_count(next_grid)    
+pprint(f"Grid and population of {local_population}")
  
