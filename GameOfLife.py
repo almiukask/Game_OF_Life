@@ -1,9 +1,7 @@
 from pprint import pprint
 import random
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import time
-import numpy as np
+import argparse
 
 
 def get_initial_data(grid_size: int) -> list[list[int]]:
@@ -92,27 +90,38 @@ def fill_new_gen_grid(grid_snip: list[list[int]]) -> list[list[int]]:
     return new_grid
 
 
-def perform_tick(local_grid: list[list[int]]) -> list[list[int]]:
-    """
-    Perfroms a tick for a new generation taken are of the data
-    """
-    next_grid = fill_new_gen_grid(local_grid)
-    #local_population = population_count(next_grid)
-    return next_grid
+def get_arguments() -> list[int,int]:
+    parser = argparse.ArgumentParser(
+        prog="GameOfLife", description="Runs game for finite genrations"
+    )
+    parser.add_argument("-d", "--dim", help="matrix dimesnion")
+    parser.add_argument("-g", "--gens", help="generations to play")
+    args = parser.parse_args()
+    try:
+        grid_size = abs(int(args.dim))  # if int(args.dim) >= 0 else 50
+    except:
+        grid_size = 50
+        pprint("Values for --dim not provided properly - using defaults")
+    try:
+        gen_count = abs(int(args.gens))  # if int(args.gens) >= 0 else 500
+    except:
+        gen_count = 500
+        pprint("Values for --gens not provided properly - using defaults")
+    return [grid_size, gen_count]
 
 
 if __name__ == "__main__":
 
-    local_grid = get_initial_data(50)
-    local_population = population_count(local_grid)
+    grid_size, gen_count = get_arguments()
+
+    local_grid = get_initial_data(grid_size)
 
     fig, ax = plt.subplots()
 
-    for i in range(1000):
+    for i in range(gen_count):
         next_grid = fill_new_gen_grid(local_grid)
         ax.clear()
         ax.imshow(next_grid)
         ax.set_title(f"frame {i}")
-        plt.pause(1)
+        plt.pause(0.5)
         local_grid = next_grid.copy()
-
