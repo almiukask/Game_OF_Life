@@ -1,24 +1,39 @@
 from pprint import pprint
 import random
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import time
+import numpy as np
 
-def data_generation(grid_size):
+
+def get_initial_data(grid_size: int) -> list[list[int]]:
+    """
+    Generates matrix of 1 and 0. Takes the size of matrix
+    """
     random.seed(10)
     grid_list = []
-    for i in range(grid_size):
-        single_list = []
-        for j in range(grid_size):
-            single_list.append(int(random.random()*6/5)) #defining odds of 1 appearing 
-        grid_list.append(single_list)
+    for _ in range(grid_size):
+        row = []
+        for _ in range(grid_size):
+            row.append(int(random.random() * 3 / 2))  # defining odds of 1 appearing
+        grid_list.append(row)
     return grid_list
 
-def population_count(grid_snip):
+
+def population_count(grid_snip: list[list[int]]) -> int:
+    """
+    Counts and retruns sum of 1s in the given matrix
+    """
     sum_ = 0
     for x in grid_snip:
         sum_ += sum(x)
     return sum_
 
-def get_next_gen_state(grid_snip, curr_x, curr_y):
-    flat_list = []
+
+def get_neighbours_count(grid_snip: list[list[int]], curr_x: int, curr_y: int) -> int:
+    """
+    Takes a matrix, location of current element and gives out alive neighbour count
+    """
     neighbour_count = 0
 
     lower_x = curr_x - 1 if curr_x >= 1 else curr_x
@@ -29,64 +44,75 @@ def get_next_gen_state(grid_snip, curr_x, curr_y):
     self_x = 1 if curr_x > 0 else 0
     self_y = 1 if curr_y > 0 else 0
 
-    #pprint(f"Current state {grid_snip[curr_x][curr_y]} of selected cell")
-    #pprint(f"l_x {lower_x}, l_y {lower_y}, u_x {upper_x}, u_y {upper_y}")
-    for i, x in enumerate(grid_snip[lower_x:upper_x]):
-        #pprint(f"fist slice {x} index i {i}")
-        for j, y in enumerate(x[lower_y:upper_y]):
-            #pprint(f"second slice {y} index y {j}")
-            if not(i==self_x and j== self_y):
-                flat_list.append(y)
-            #else:
-                #pprint(f"self state {y}")
+    # range(curr_x-1; curr_x+2)
 
-    #pprint(flat_list)
-    neighbour_count = sum(y > 0 for y in flat_list)
-    #pprint(f"Alive neighbours count {neighbour_count}")
+    for idx_x, row in enumerate(grid_snip[lower_x:upper_x]):
+        for idx_y, cell in enumerate(row[lower_y:upper_y]):
+            if not (idx_x == self_x and idx_y == self_y):
+                neighbour_count += cell
+    return neighbour_count
+
+
+def get_next_gen_state(grid_snip: list[list[int]], curr_x: int, curr_y: int) -> int:
+    """
+    Given the the state of a current element and its neighbour states returns upcoming state for a matrix element
+    """
+    neighbour_count = get_neighbours_count(grid_snip, curr_x, curr_y)
 
     if grid_snip[curr_x][curr_y] == 1:
         if neighbour_count < 2:
             return 0
-        elif neighbour_count >= 2 and neighbour_count <= 3:
+        elif neighbour_count in (2, 3):
             return 1
         elif neighbour_count > 3:
             return 0
-        else: 
-            return grid_snip[curr_x][curr_y]
-    else:
-        if neighbour_count == 3:
-          return 1  
         else:
-            return grid_snip[curr_x][curr_y]
-        
-def fill_new_gen_grid(grid_snip):
-    new_grid=[]
+            raise Exception("")
+            return 1
 
-    for i,_ in enumerate(grid_snip):
+    # not alive
+    if neighbour_count == 3:
+        return 1
+    else:
+        return 0
+
+
+def fill_new_gen_grid(grid_snip: list[list[int]]) -> list[list[int]]:
+    """
+    Constructs matrix for upcoming generation given the previous one
+    """
+    new_grid = []
+
+    for i, _ in enumerate(grid_snip):
         single_list = []
-        for j,_ in enumerate(grid_snip):
-            single_list.append(get_next_gen_state(grid_snip, i, j))  
+        for j, _ in enumerate(grid_snip):
+            new_state = get_next_gen_state(grid_snip, i, j)
+            single_list.append(new_state)
         new_grid.append(single_list)
-        #pprint(single_list)
-    #pprint(new_grid)
     return new_grid
 
-local_grid=[]
-next_grid=[]
-local_grid=data_generation(10)
-local_population=0
-local_population=population_count(local_grid)
 
-pprint(f"Grid and population of {local_population}")
-for x in local_grid:
-    pprint(f"{x}")
+def perform_tick(local_grid: list[list[int]]) -> list[list[int]]:
+    """
+    Perfroms a tick for a new generation taken are of the data
+    """
+    next_grid = fill_new_gen_grid(local_grid)
+    #local_population = population_count(next_grid)
+    return next_grid
 
 
-pprint(f"Upcoming generation cell state {get_next_gen_state(local_grid, 1, 5)}")
+if __name__ == "__main__":
 
-next_grid=fill_new_gen_grid(local_grid)
-for x in next_grid:
-    pprint(f"{x}")
-local_population=population_count(next_grid)    
-pprint(f"Grid and population of {local_population}")
- 
+    local_grid = get_initial_data(50)
+    local_population = population_count(local_grid)
+
+    fig, ax = plt.subplots()
+
+    for i in range(1000):
+        next_grid = fill_new_gen_grid(local_grid)
+        ax.clear()
+        ax.imshow(next_grid)
+        ax.set_title(f"frame {i}")
+        plt.pause(1)
+        local_grid = next_grid.copy()
+
