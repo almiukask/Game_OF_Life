@@ -33,6 +33,11 @@ def get_neighbours_count(grid_snip: list[list[int]], curr_x: int, curr_y: int) -
     Takes a matrix, location of current element and gives out alive neighbour count
     """
     neighbour_count = 0
+    if type(curr_x) is not int or type(curr_y) is not int:
+        raise Exception("index Contains NaN")
+
+    if curr_x < 0 or curr_y < 0:
+        raise ValueError("index cannot be a negative number")
 
     lower_x = curr_x - 1 if curr_x >= 1 else curr_x
     lower_y = curr_y - 1 if curr_y >= 1 else curr_y
@@ -47,7 +52,10 @@ def get_neighbours_count(grid_snip: list[list[int]], curr_x: int, curr_y: int) -
     for idx_x, row in enumerate(grid_snip[lower_x:upper_x]):
         for idx_y, cell in enumerate(row[lower_y:upper_y]):
             if not (idx_x == self_x and idx_y == self_y):
-                neighbour_count += cell
+                if type(cell) is not int:
+                    raise TypeError("Data Contains NaN")
+                else:
+                    neighbour_count += 1 if cell != 0 else (cell if cell == 1 else 0)
     return neighbour_count
 
 
@@ -90,7 +98,7 @@ def fill_new_gen_grid(grid_snip: list[list[int]]) -> list[list[int]]:
     return new_grid
 
 
-def get_arguments() -> list[int,int]:
+def get_arguments() -> list[int, int]:
     parser = argparse.ArgumentParser(
         prog="GameOfLife", description="Runs game for finite genrations"
     )
@@ -115,6 +123,7 @@ if __name__ == "__main__":
     grid_size, gen_count = get_arguments()
 
     local_grid = get_initial_data(grid_size)
+    pprint(local_grid)
 
     fig, ax = plt.subplots()
 
